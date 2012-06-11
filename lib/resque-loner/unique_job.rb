@@ -49,6 +49,21 @@ module Resque
           @loner_ttl || -1
         end
 
+        #
+        # The default ttl of a persisting key is 0, i.e. immediately deleted.
+        # You can set persist_ttl if you want the job to not be done again for a certain
+        # amount of time.  For example:
+        #
+        # class FooJob
+        #   include Resque::Plugins::UniqueJob
+        #   @persist_ttl = 40
+        #   end
+        # end
+        #
+        def persist_ttl
+          @persist_ttl || -1
+        end
+
       end # ClassMethods
 
 

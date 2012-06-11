@@ -21,7 +21,11 @@ module Resque
         def self.mark_loner_as_unqueued(queue, job)
           item = job.is_a?(Resque::Job) ? job.payload : job
           return unless item_is_a_unique_job?(item)
-          redis.del(unique_job_queue_key(queue, item))
+          unless (ttl=persist_ttl(item)) == 0
+            redis.expire(unique_job_queue_key(queue, item), ttl)
+          else
+            redis.del(unique_job_queue_key(queue, item))
+          end
         end
 
         def self.unique_job_queue_key(queue, item)
@@ -43,6 +47,14 @@ module Resque
             constantize(item[:class] || item["class"]).loner_ttl
           rescue
             -1
+          end
+        end
+
+        def self.persist_ttl(item)
+          begin
+            constantize(item[:class] || item["class"]).persist_ttl
+          rescue
+            0
           end
         end
 
